@@ -1,0 +1,27 @@
+openapi: 3.0.3
+info:
+  title: OTP Dashboard Backend
+  version: 1.0.0
+  description: |
+    Backend for the OTP dashboard. It exposes a health endpoint for HTTP
+    verification and a Socket.IO bridge for realtime OTP updates.
+servers:
+  - url: http://localhost:3001
+    description: Local development server
+paths:
+  /health:
+    get:
+      summary: Health check
+      description: Returns a simple JSON response indicating the backend is running.
+      operationId: getHealth
+      responses:
+        "200":
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    example: true
