@@ -197,7 +197,9 @@ export default function OTPDashboard() {
                       <td className="app-cell">
                         <span className="app-badge">{row.app_name || "-"}</span>
                       </td>
-                      <td className="date-cell">{formatDate(row.created_at)}</td>
+                      <td className="date-cell">
+                        {formatDate(row.created_at)}
+                      </td>
                       <td className="action-cell">
                         <button
                           className="copy-btn"
