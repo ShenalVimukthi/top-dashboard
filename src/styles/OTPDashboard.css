@@ -1,0 +1,453 @@
+:root {
+  --primary-color: #3b82f6;
+  --primary-dark: #1e40af;
+  --secondary-color: #06b6d4;
+  --success-color: #10b981;
+  --danger-color: #ef4444;
+  --warning-color: #f59e0b;
+  --bg-primary: #0f172a;
+  --bg-secondary: #1e293b;
+  --bg-tertiary: #334155;
+  --text-primary: #f1f5f9;
+  --text-secondary: #cbd5e1;
+  --border-color: #475569;
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.otp-dashboard {
+  min-height: 100vh;
+  background: linear-gradient(135deg, var(--bg-primary) 0%, #1a1f3a 100%);
+  color: var(--text-primary);
+  padding: 24px;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu",
+    "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 32px;
+  animation: slideDown 0.5s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.header-content h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+  background: linear-gradient(
+    135deg,
+    var(--primary-color) 0%,
+    var(--secondary-color) 100%
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.header-content p {
+  color: var(--text-secondary);
+  font-size: 1rem;
+}
+
+.refresh-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: linear-gradient(
+    135deg,
+    var(--primary-color) 0%,
+    var(--secondary-color) 100%
+  );
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: var(--shadow-md);
+}
+
+.refresh-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.refresh-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.refresh-btn svg.spinning {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.search-section {
+  position: relative;
+  margin-bottom: 24px;
+}
+
+.search-input {
+  width: 100%;
+  padding: 12px 16px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  color: var(--text-primary);
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.search-input::placeholder {
+  color: var(--text-secondary);
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  background: var(--bg-secondary);
+}
+
+.filter-badge {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: var(--primary-color);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.error-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid var(--danger-color);
+  border-radius: 8px;
+  color: #fca5a5;
+  margin-bottom: 24px;
+  animation: slideDown 0.3s ease-out;
+}
+
+.loading-state,
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 24px;
+  gap: 16px;
+  animation: slideDown 0.3s ease-out;
+}
+
+.loading-state svg,
+.empty-state svg {
+  color: var(--text-secondary);
+}
+
+.loading-state svg.spinning {
+  animation: spin 1.5s linear infinite;
+}
+
+.loading-state p,
+.empty-state p {
+  color: var(--text-secondary);
+  font-size: 1.1rem;
+}
+
+.table-container {
+  animation: slideUp 0.5s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.table-wrapper {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: var(--shadow-lg);
+  margin-bottom: 16px;
+}
+
+.otp-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.otp-table thead {
+  background: linear-gradient(
+    135deg,
+    rgba(59, 130, 246, 0.1) 0%,
+    rgba(6, 182, 212, 0.1) 100%
+  );
+  border-bottom: 2px solid var(--border-color);
+}
+
+.otp-table th {
+  padding: 16px;
+  text-align: left;
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.otp-table tbody tr {
+  border-bottom: 1px solid var(--border-color);
+  transition: all 0.3s ease;
+}
+
+.otp-table tbody tr:hover {
+  background: rgba(59, 130, 246, 0.05);
+}
+
+.otp-table td {
+  padding: 16px;
+  color: var(--text-primary);
+}
+
+.otp-badge {
+  display: inline-block;
+  padding: 8px 12px;
+  background: linear-gradient(
+    135deg,
+    rgba(59, 130, 246, 0.2) 0%,
+    rgba(6, 182, 212, 0.2) 100%
+  );
+  border: 1px solid var(--primary-color);
+  border-radius: 6px;
+  font-weight: 700;
+  font-size: 1rem;
+  color: #60a5fa;
+  font-family: "Courier New", monospace;
+  letter-spacing: 1px;
+}
+
+.phone-cell {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+}
+
+.app-badge {
+  display: inline-block;
+  padding: 6px 10px;
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid var(--success-color);
+  border-radius: 4px;
+  color: #6ee7b7;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.date-cell {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  font-family: "Courier New", monospace;
+}
+
+.action-cell {
+  text-align: center;
+}
+
+.copy-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: rgba(59, 130, 246, 0.2);
+  border: 1px solid var(--primary-color);
+  border-radius: 6px;
+  color: var(--primary-color);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.copy-btn:hover {
+  background: var(--primary-color);
+  color: white;
+  transform: scale(1.1);
+}
+
+.copy-btn .check-icon {
+  color: var(--success-color);
+}
+
+.table-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-top: none;
+  border-radius: 0 0 12px 12px;
+  font-size: 0.9rem;
+}
+
+.record-count {
+  color: var(--text-secondary);
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .dashboard-header {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .otp-table {
+    font-size: 0.9rem;
+  }
+
+  .otp-table th,
+  .otp-table td {
+    padding: 12px;
+  }
+
+  .header-content h1 {
+    font-size: 2rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .otp-dashboard {
+    padding: 16px;
+  }
+
+  .header-content h1 {
+    font-size: 1.75rem;
+  }
+
+  .table-wrapper {
+    border-radius: 8px;
+    overflow-x: auto;
+  }
+
+  .otp-table {
+    min-width: 100%;
+  }
+
+  .otp-table th,
+  .otp-table td {
+    padding: 12px 8px;
+    font-size: 0.85rem;
+  }
+
+  .otp-badge {
+    font-size: 0.9rem;
+    padding: 6px 10px;
+  }
+
+  .app-badge {
+    font-size: 0.8rem;
+    padding: 4px 8px;
+  }
+
+  .copy-btn {
+    width: 32px;
+    height: 32px;
+  }
+
+  .table-footer {
+    flex-direction: column;
+    gap: 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .otp-dashboard {
+    padding: 12px;
+  }
+
+  .dashboard-header {
+    margin-bottom: 20px;
+  }
+
+  .header-content h1 {
+    font-size: 1.5rem;
+  }
+
+  .header-content p {
+    font-size: 0.9rem;
+  }
+
+  .refresh-btn {
+    padding: 8px 12px;
+    font-size: 0.9rem;
+  }
+
+  .search-input {
+    padding: 10px 12px;
+    font-size: 0.9rem;
+  }
+
+  .otp-table th,
+  .otp-table td {
+    padding: 10px 6px;
+    font-size: 0.75rem;
+  }
+
+  .otp-badge {
+    font-size: 0.8rem;
+    padding: 4px 8px;
+  }
+
+  .date-cell {
+    display: none;
+  }
+
+  .otp-table th:nth-child(4),
+  .otp-table td:nth-child(4) {
+    display: none;
+  }
+}
