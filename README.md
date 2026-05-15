@@ -14,3 +14,9 @@ The React Compiler is not enabled on this template because of its impact on dev 
 ## Expanding the ESLint configuration
 
 If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+
+## Live OTP Updates
+
+This app now listens for live changes in `otp_master` through a websocket bridge in `backend/server.js`.
+
+Run the UI and bridge together with `npm run dev:full`, or start them separately with `npm run server` and `npm run dev`.

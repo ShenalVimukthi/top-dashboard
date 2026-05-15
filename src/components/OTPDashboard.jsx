@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
+import { io } from "socket.io-client";
 import { supabase } from "../lib/supabase";
 import {
   RefreshCw,
@@ -9,6 +10,26 @@ import {
 } from "lucide-react";
 import "../styles/OTPDashboard.css";
 
+const realtimeUrl =
+  import.meta.env.VITE_REALTIME_URL || "http://localhost:3001";
+
+const sortRows = (rows) =>
+  [...rows].sort(
+    (left, right) =>
+      new Date(right.created_at || 0).getTime() -
+      new Date(left.created_at || 0).getTime(),
+  );
+
+const mergeRows = (rows) => {
+  const rowMap = new Map();
+
+  rows.forEach((row) => {
+    rowMap.set(row.id, row);
+  });
+
+  return sortRows(Array.from(rowMap.values()));
+};
+
 export default function OTPDashboard() {
   const [otpData, setOtpData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -16,8 +37,47 @@ export default function OTPDashboard() {
   const [copiedId, setCopiedId] = useState(null);
   const [filter, setFilter] = useState("");
 
+  async function fetchOTPData() {
+    try {
+      setLoading(true);
+      setError(null);
+      const { data, error: fetchError } = await supabase
+        .from("otp_master")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(100);
+
+      if (fetchError) throw fetchError;
+      setOtpData(mergeRows(data || []));
+    } catch (err) {
+      setError(err.message);
+      console.error("Error fetching OTP data:", err);
+    } finally {
+      setLoading(false);
+    }
+  }
+
   useEffect(() => {
-    fetchOTPData();
+    let cancelled = false;
+
+    Promise.resolve().then(() => {
+      if (!cancelled) {
+        void fetchOTPData();
+      }
+    });
+
+    const socket = io(realtimeUrl, {
+      transports: ["websocket"],
+    });
+
+    socket.on("otp_master:snapshot", (rows) => {
+      setOtpData(mergeRows(Array.isArray(rows) ? rows : []));
+      setLoading(false);
+    });
+
+    socket.on("connect_error", (socketError) => {
+      console.error("Realtime socket connection failed:", socketError);
+    });
 
     // Set up real-time subscription
     const subscription = supabase
@@ -26,35 +86,21 @@ export default function OTPDashboard() {
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "otp_master" },
         (payload) => {
-          setOtpData((prev) => [payload.new, ...prev]);
+          if (!payload.new) {
+            return;
+          }
+
+          setOtpData((prev) => mergeRows([payload.new, ...prev]));
         },
       )
       .subscribe();
 
     return () => {
-      subscription.unsubscribe();
+      cancelled = true;
+      socket.disconnect();
+      supabase.removeChannel(subscription);
     };
   }, []);
-
-  const fetchOTPData = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const { data, error: fetchError } = await supabase
-        .from("otp_master")
-        .select("*")
-        .order("created_at", { ascending: false })
-        .limit(50);
-
-      if (fetchError) throw fetchError;
-      setOtpData(data || []);
-    } catch (err) {
-      setError(err.message);
-      console.error("Error fetching OTP data:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const copyToClipboard = (text, id) => {
     navigator.clipboard.writeText(text);
@@ -129,50 +175,52 @@ export default function OTPDashboard() {
         </div>
       ) : (
         <div className="table-container">
-          <div className="table-wrapper">
-            <table className="otp-table">
-              <thead>
-                <tr>
-                  <th>OTP</th>
-                  <th>Phone</th>
-                  <th>App Name</th>
-                  <th>Created At</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredData.map((row) => (
-                  <tr key={row.id} className="table-row">
-                    <td className="otp-cell">
-                      <span className="otp-badge">{row.otp}</span>
-                    </td>
-                    <td className="phone-cell">{row.phone || "-"}</td>
-                    <td className="app-cell">
-                      <span className="app-badge">{row.app_name || "-"}</span>
-                    </td>
-                    <td className="date-cell">{formatDate(row.created_at)}</td>
-                    <td className="action-cell">
-                      <button
-                        className="copy-btn"
-                        onClick={() => copyToClipboard(row.otp, row.id)}
-                        title="Copy OTP"
-                      >
-                        {copiedId === row.id ? (
-                          <CheckCircle size={18} className="check-icon" />
-                        ) : (
-                          <Copy size={18} />
-                        )}
-                      </button>
-                    </td>
+          <div className="table-card">
+            <div className="table-wrapper">
+              <table className="otp-table">
+                <thead>
+                  <tr>
+                    <th>OTP</th>
+                    <th>Phone</th>
+                    <th>App Name</th>
+                    <th>Created At</th>
+                    <th>Action</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          <div className="table-footer">
-            <span className="record-count">
-              Showing {filteredData.length} of {otpData.length} records
-            </span>
+                </thead>
+                <tbody>
+                  {filteredData.map((row) => (
+                    <tr key={row.id} className="table-row">
+                      <td className="otp-cell">
+                        <span className="otp-badge">{row.otp}</span>
+                      </td>
+                      <td className="phone-cell">{row.phone || "-"}</td>
+                      <td className="app-cell">
+                        <span className="app-badge">{row.app_name || "-"}</span>
+                      </td>
+                      <td className="date-cell">{formatDate(row.created_at)}</td>
+                      <td className="action-cell">
+                        <button
+                          className="copy-btn"
+                          onClick={() => copyToClipboard(row.otp, row.id)}
+                          title="Copy OTP"
+                        >
+                          {copiedId === row.id ? (
+                            <CheckCircle size={18} className="check-icon" />
+                          ) : (
+                            <Copy size={18} />
+                          )}
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <div className="table-footer">
+              <span className="record-count">
+                Showing {filteredData.length} of {otpData.length} records
+              </span>
+            </div>
           </div>
         </div>
       )}
