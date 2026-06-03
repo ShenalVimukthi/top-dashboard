@@ -7,6 +7,8 @@ import {
   AlertCircle,
   Copy,
   CheckCircle,
+  ChevronDown,
+  Filter,
 } from "lucide-react";
 import "../styles/OTPDashboard.css";
 
@@ -36,6 +38,8 @@ export default function OTPDashboard() {
   const [error, setError] = useState(null);
   const [copiedId, setCopiedId] = useState(null);
   const [filter, setFilter] = useState("");
+  const [selectedApp, setSelectedApp] = useState("all");
+  const [dropdownOpen, setDropdownOpen] = useState(false);
 
   async function fetchOTPData() {
     try {
@@ -102,6 +106,17 @@ export default function OTPDashboard() {
     };
   }, []);
 
+  useEffect(() => {
+    if (!dropdownOpen) return;
+    const handleOutsideClick = (e) => {
+      if (!e.target.closest(".app-filter-dropdown-container")) {
+        setDropdownOpen(false);
+      }
+    };
+    document.addEventListener("click", handleOutsideClick);
+    return () => document.removeEventListener("click", handleOutsideClick);
+  }, [dropdownOpen]);
+
   const copyToClipboard = (text, id) => {
     navigator.clipboard.writeText(text);
     setCopiedId(id);
@@ -119,15 +134,40 @@ export default function OTPDashboard() {
     });
   };
 
-  const filteredData = otpData.filter(
-    (item) =>
+  const filteredData = otpData.filter((item) => {
+    // App Filter
+    if (selectedApp !== "all") {
+      if (item.app_name?.toLowerCase() !== selectedApp.toLowerCase()) {
+        return false;
+      }
+    }
+
+    // Text Search Filter
+    if (!filter) return true;
+    return (
       item.app_name?.toLowerCase().includes(filter.toLowerCase()) ||
       item.phone?.includes(filter) ||
-      item.otp?.toString().includes(filter),
-  );
+      item.otp?.toString().includes(filter)
+    );
+  });
 
   return (
     <div className="otp-dashboard">
+      <div className="bg-shapes">
+        <svg className="shape shape-1" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <polygon points="50,15 90,85 10,85" stroke="rgba(129, 140, 248, 0.3)" strokeWidth="1.5" fill="rgba(129, 140, 248, 0.03)" />
+        </svg>
+        <svg className="shape shape-2" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <polygon points="50,5 95,35 95,85 50,95 5,85 5,35" stroke="rgba(6, 182, 212, 0.25)" strokeWidth="1.5" fill="rgba(6, 182, 212, 0.02)" />
+        </svg>
+        <svg className="shape shape-3" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <polygon points="50,5 90,50 50,95 10,50" stroke="rgba(236, 72, 153, 0.25)" strokeWidth="1.5" fill="rgba(236, 72, 153, 0.02)" />
+        </svg>
+        <div className="glow-blob glow-1"></div>
+        <div className="glow-blob glow-2"></div>
+        <div className="glow-blob glow-3"></div>
+      </div>
+      
       <div className="dashboard-header">
         <div className="header-content">
           <h1>OTP Dashboard</h1>
@@ -143,17 +183,67 @@ export default function OTPDashboard() {
         </button>
       </div>
 
-      <div className="search-section">
-        <input
-          type="text"
-          placeholder="Filter by app name, phone, or OTP..."
-          value={filter}
-          onChange={(e) => setFilter(e.target.value)}
-          className="search-input"
-        />
-        {filter && (
-          <span className="filter-badge">{filteredData.length} results</span>
-        )}
+      <div className="filter-bar">
+        <div className="search-section">
+          <input
+            type="text"
+            placeholder="Filter by app name, phone, or OTP..."
+            value={filter}
+            onChange={(e) => setFilter(e.target.value)}
+            className="search-input"
+          />
+          {filter && (
+            <span className="filter-badge">{filteredData.length} results</span>
+          )}
+        </div>
+
+        <div className="app-filter-dropdown-container">
+          <button 
+            className={`dropdown-trigger-btn ${selectedApp !== "all" ? "active" : ""}`}
+            onClick={() => setDropdownOpen(!dropdownOpen)}
+          >
+            <Filter size={16} />
+            <span>
+              {selectedApp === "all" ? "All Apps" : selectedApp}
+            </span>
+            <ChevronDown size={16} className={`chevron-icon ${dropdownOpen ? "open" : ""}`} />
+          </button>
+          
+          {dropdownOpen && (
+            <div className="dropdown-menu-list">
+              <button 
+                className={`dropdown-item ${selectedApp === "all" ? "selected" : ""}`}
+                onClick={() => { setSelectedApp("all"); setDropdownOpen(false); }}
+              >
+                All Apps
+              </button>
+              <button 
+                className={`dropdown-item ${selectedApp === "lounge_owner" ? "selected" : ""}`}
+                onClick={() => { setSelectedApp("lounge_owner"); setDropdownOpen(false); }}
+              >
+                lounge_owner
+              </button>
+              <button 
+                className={`dropdown-item ${selectedApp === "driver_conductor" ? "selected" : ""}`}
+                onClick={() => { setSelectedApp("driver_conductor"); setDropdownOpen(false); }}
+              >
+                driver_conductor
+              </button>
+              <button 
+                className={`dropdown-item ${selectedApp === "passenger" ? "selected" : ""}`}
+                onClick={() => { setSelectedApp("passenger"); setDropdownOpen(false); }}
+              >
+                passenger
+              </button>
+              <button 
+                className={`dropdown-item ${selectedApp === "admin" ? "selected" : ""}`}
+                onClick={() => { setSelectedApp("admin"); setDropdownOpen(false); }}
+              >
+                admin
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
       {error && (
